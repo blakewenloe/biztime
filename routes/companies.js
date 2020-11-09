@@ -18,10 +18,26 @@ router.get("/", async function (req, res, next) {
 //get a company by its code
 router.get("/:code", async function (req, res, next) {
   try {
+    const { code } = req.params;
     const results = await db.query(
       `SELECT code, name, description
       FROM companies
       WHERE code=$1`,
+      [code]
+    );
+    return res.json({ company: results.rows });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+//add a company
+router.post("/:code", async function (req, res, next) {
+  try {
+    const results = await db.query(
+      `SELECT code, name, description
+        FROM companies
+        WHERE code=$1`,
       [req.params.code]
     );
     return res.json({ company: results.rows });
