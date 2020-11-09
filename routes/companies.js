@@ -32,15 +32,18 @@ router.get("/:code", async function (req, res, next) {
 });
 
 //add a company
-router.post("/:code", async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   try {
-    const results = await db.query(
-      `SELECT code, name, description
-        FROM companies
-        WHERE code=$1`,
-      [req.params.code]
+    const { code, name, description } = req.body;
+
+    const result = await db.query(
+      `INSERT INTO companies (code, name, description) 
+             VALUES ($1, $2, $3)
+             RETURNING code, name, description`,
+      [code, name, description]
     );
-    return res.json({ company: results.rows });
+
+    return res.status(201).json(result.rows[0]);
   } catch (err) {
     return next(err);
   }
