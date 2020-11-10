@@ -36,8 +36,9 @@ router.get("/:code", async function (req, res, next) {
       [code]
     );
 
-    if (companyResults.rows.length === 0)
+    if (companyResults.rows.length === 0) {
       throw new ExpressError(`No company found for ${code}`, 404);
+    }
     const company = companyResults.rows[0];
     const invoices = invoiceResults.rows;
     company.invoices = invoices.map((inv) => inv);
@@ -50,12 +51,12 @@ router.get("/:code", async function (req, res, next) {
 //add a company
 router.post("/", async function (req, res, next) {
   try {
-    const { code, name, description } = req.body;
-
+    const { name, description } = req.body;
+    const code = slugify("name", { lower: true });
     const result = await db.query(
       `INSERT INTO companies (code, name, description) 
-             VALUES ($1, $2, $3)
-             RETURNING code, name, description`,
+       VALUES ($1, $2, $3)
+       RETURNING code, name, description`,
       [code, name, description]
     );
 
