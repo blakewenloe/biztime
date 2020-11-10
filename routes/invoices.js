@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
-      `SELECT id, comp_Code, amt, paid, add_date, paid_date
+      `SELECT id, comp_Code
       FROM invoices`
     );
 
@@ -20,12 +20,23 @@ router.get("/", async function (req, res, next) {
 router.get("/:id", async function (req, res, next) {
   try {
     const { id } = req.params;
-    const results = await db.query(
-      `SELECT id, comp_Code, amt, paid, add_date, paid_date
-        FROM invoices
-        WHERE id=$1`,
+    const result = await db.query(
+      `SELECT i.id, 
+              i.comp_code, 
+              i.amt, 
+              i.paid, 
+              i.add_date, 
+              i.paid_date, 
+              c.name, 
+              c.description 
+       FROM invoices AS i
+         INNER JOIN companies AS c ON (i.comp_code = c.code)  
+       WHERE id = $1`,
       [id]
     );
+    if (result.rows.length === 0) {
+      throw new ExpressError(`Invoice not found`, 404);
+    }
     return res.json({ invoice: results.rows });
   } catch (err) {
     return next(err);

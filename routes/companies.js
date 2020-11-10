@@ -6,10 +6,12 @@ const router = express.Router();
 router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
-      `SELECT code, name, description, invoices FROM companies join invoices on companies.code=invoices.comp_Code`
+      `SELECT code, name, description, invoices
+      FROM companies
+      JOIN invoices ON companies.code=invoices.comp_Code`
     );
 
-    return res.json({ companies: results.rows });
+    return res.status(200).json({ companies: results.rows });
   } catch (err) {
     return next(err);
   }
@@ -20,8 +22,8 @@ router.get("/:code", async function (req, res, next) {
   try {
     const { code } = req.params;
     const results = await db.query(
-      `SELECT code, name, description
-      FROM companies
+      `SELECT code, name, description, invoices
+      FROM companies join invoices on companies.code=invoices.comp_code
       WHERE code=$1`,
       [code]
     );
