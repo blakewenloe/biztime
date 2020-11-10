@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
-      `SELECT code, name, description FROM companies`
+      `SELECT code, name, description, invoices FROM companies join invoices on companies.code=invoices.comp_Code`
     );
 
     return res.json({ companies: results.rows });
