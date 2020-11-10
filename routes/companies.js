@@ -1,14 +1,16 @@
 const db = require("../db");
 const express = require("express");
 const router = express.Router();
+const slugify = require("slugify");
+const ExpressError = require("../expressError");
 
 //get list of companies should return
 router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
-      `SELECT code, name, description, invoices
+      `SELECT code, name
       FROM companies
-      JOIN invoices ON companies.code=invoices.comp_Code`
+      ORDER BY name`
     );
 
     return res.status(200).json({ companies: results.rows });
@@ -21,13 +23,25 @@ router.get("/", async function (req, res, next) {
 router.get("/:code", async function (req, res, next) {
   try {
     const { code } = req.params;
-    const results = await db.query(
-      `SELECT code, name, description, invoices
-      FROM companies join invoices on companies.code=invoices.comp_code
+    const companyResults = await db.query(
+      `SELECT code, name, description
+      FROM companies
       WHERE code=$1`,
       [code]
     );
-    return res.json({ company: results.rows });
+    const invoiceResults = await db.query(
+      `SELECT *
+      FROM invoices
+      WHERE comp_code=$1`,
+      [code]
+    );
+
+    if (companyResults.rows.length === 0)
+      throw new ExpressError(`No company found for ${code}`, 404);
+    const company = companyResults.rows[0];
+    const invoices = invoiceResults.rows;
+    company.invoices = invoices.map((inv) => inv.id);
+    return res.json({ company: company });
   } catch (err) {
     return next(err);
   }
