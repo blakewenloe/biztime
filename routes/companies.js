@@ -78,8 +78,11 @@ router.put("/:code", async function (req, res, next) {
                RETURNING code, name, description`,
       [code, name, description]
     );
-
-    return res.status(200).json(result.rows[0]);
+    if (result.rows.length === 0) {
+      throw new ExpressError(`No company found for ${code}`, 404);
+    } else {
+      return res.json({ company: result.rows[0] });
+    }
   } catch (err) {
     return next(err);
   }
@@ -92,8 +95,11 @@ router.delete("/:code", async function (req, res, next) {
     const result = await db.query("DELETE FROM companies WHERE code = $1", [
       code,
     ]);
-
-    return res.json({ message: "Company deleted" });
+    if (result.rows.length === 0) {
+      throw new ExpressError(`No company found for ${code}`, 404);
+    } else {
+      return res.json({ status: `${code} deleted` });
+    }
   } catch (err) {
     return next(err);
   }
