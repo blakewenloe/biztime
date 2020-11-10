@@ -40,7 +40,7 @@ router.get("/:code", async function (req, res, next) {
       throw new ExpressError(`No company found for ${code}`, 404);
     const company = companyResults.rows[0];
     const invoices = invoiceResults.rows;
-    company.invoices = invoices.map((inv) => inv.id);
+    company.invoices = invoices.map((inv) => inv);
     return res.json({ company: company });
   } catch (err) {
     return next(err);
