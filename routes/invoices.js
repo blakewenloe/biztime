@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", async function (req, res, next) {
   try {
     const results = await db.query(
-      `SELECT id, comp_code, amt, paid, add_date, paid_date
+      `SELECT id, comp_Code, amt, paid, add_date, paid_date
       FROM invoices`
     );
 
@@ -16,12 +16,12 @@ router.get("/", async function (req, res, next) {
   }
 });
 
-//get a invoice by its id
+//get an invoice by its id
 router.get("/:id", async function (req, res, next) {
   try {
     const { id } = req.params;
     const results = await db.query(
-      `SELECT id, comp_code, amt, paid, add_date, paid_date
+      `SELECT id, comp_Code, amt, paid, add_date, paid_date
         FROM invoices
         WHERE id=$1`,
       [id]
@@ -32,16 +32,16 @@ router.get("/:id", async function (req, res, next) {
   }
 });
 
-//add a invoice
+//add an invoice
 router.post("/", async function (req, res, next) {
   try {
-    const { comp_code, amt, paid, add_date, paid_date } = req.body;
+    const { comp_Code, amt, paid, add_date, paid_date } = req.body;
 
     const result = await db.query(
-      `INSERT INTO invoices (comp_code, amt, paid, add_date, paid_date) 
+      `INSERT INTO invoices (comp_Code, amt, paid, add_date, paid_date) 
              VALUES ($1, $2, $3, $4, $5)
-             RETURNING comp_code, amt, paid, add_date, paid_date`,
-      [comp_code, amt, paid, add_date, paid_date]
+             RETURNING comp_Code, amt, paid, add_date, paid_date`,
+      [comp_Code, amt, paid, add_date, paid_date]
     );
 
     return res.status(201).json(result.rows[0]);
@@ -50,17 +50,17 @@ router.post("/", async function (req, res, next) {
   }
 });
 
-//edit a invoice
+//edit an invoice
 router.put("/:id", async function (req, res, next) {
   try {
-    const { code } = req.params;
-    const { name, description } = req.body;
+    const { id } = req.params;
+    const { comp_Code, amt, paid, add_date, paid_date } = req.body;
 
     const result = await db.query(
-      `UPDATE invoices SET code=$1, name=$2, description=$3 
-               WHERE code=$1
-               RETURNING code, name, description`,
-      [code, name, description]
+      `UPDATE invoices SET comp_code=$2, amt=$3, paid=$4, add_date=$5, paid_date=$6
+               WHERE id=$1
+               RETURNING id, comp_Code, amt, paid, add_date, paid_date`,
+      [id, comp_Code, amt, paid, add_date, paid_date]
     );
 
     return res.status(200).json(result.rows[0]);
@@ -72,10 +72,8 @@ router.put("/:id", async function (req, res, next) {
 //delete a invoice
 router.delete("/:id", async function (req, res, next) {
   try {
-    const { code } = req.params;
-    const result = await db.query("DELETE FROM invoices WHERE code = $1", [
-      code,
-    ]);
+    const { id } = req.params;
+    const result = await db.query("DELETE FROM invoices WHERE id = $1", [id]);
 
     return res.json({ message: "invoice deleted" });
   } catch (err) {
